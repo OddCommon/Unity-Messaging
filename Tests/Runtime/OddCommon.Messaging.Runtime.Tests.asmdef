@@ -1,0 +1,21 @@
+{
+    "name": "OddCommon.Messaging.Runtime.Tests",
+    "rootNamespace": "",
+    "references": [
+        "GUID:a9064b2b171ed4daf91dbddb5b178017",
+        "GUID:a970408fd132045c9bcf11d746c2f9b3",
+        "GUID:4a313b0a8165d417a9eac229e754fa2c",
+        "GUID:ed97505aa053d48f5b9be681b64036bb"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

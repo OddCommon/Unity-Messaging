@@ -1,0 +1,18 @@
+{
+    "name": "OddCommon.Messaging.Editor",
+    "references": [
+        "OddCommon.Base.Runtime",
+        "OddCommon.Messaging.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
