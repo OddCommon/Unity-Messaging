@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace OddCommon.Messaging
 {
-    [ScriptOrder(-300)]
+    [ScriptOrder(Int32.MinValue + 1)]
     public class MessagingManager : OddBehaviourSingle<MessagingManager>
     {
         #region Fields

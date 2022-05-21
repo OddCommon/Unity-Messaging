@@ -7,7 +7,6 @@ using UnityEditor.Compilation;
 using UnityEditor.PackageManager;
 using UnityEditor.PackageManager.Requests;
 using OddCommon.Debug;
-using OddCommon.Messaging;
 
 using Assembly = System.Reflection.Assembly;
 using UnityAssembly = UnityEditor.Compilation.Assembly;
@@ -45,8 +44,13 @@ namespace OddCommon.Messaging.Editor
                 }
             }
             string saveFolderPanelTitle = "Folder to save " + filenameFull + " to";
-            string saveFileSelectedPath = 
-                EditorUtility.SaveFolderPanel(saveFolderPanelTitle, MessagingConstants.defaultAssetsPath, "");
+            string saveFileSelectedPath =
+                EditorUtility.SaveFolderPanel
+                (
+                    saveFolderPanelTitle,
+                    MessagingConstants.defaultAssetsPath,
+                    ""
+                );
             if (saveFileSelectedPath == string.Empty)
             {
                 // User cancelled out of selecting a location
@@ -86,6 +90,49 @@ namespace OddCommon.Messaging.Editor
                 path = null;
                 return false;
             }
+        }
+
+        internal static List<string> GetControlPanelNamespaceAndTitle(string controlPanelScriptFilepath)
+        {
+            List<string> controlPanelNamespaceAndTitle = new List<string>();
+            controlPanelNamespaceAndTitle.Add("");
+            controlPanelNamespaceAndTitle.Add("");
+            if (File.Exists(controlPanelScriptFilepath))
+            {
+                //Previous control panel script exists, extract namespace
+                Assembly[] allAssemblies = System.AppDomain.CurrentDomain.GetAssemblies();
+                foreach (Assembly assembly in allAssemblies)
+                {
+                    foreach (Type type in assembly.GetTypes())
+                    {
+                        if (type.Name == MessagingConstants.controlPanelScriptFilename)
+                        {
+                            controlPanelNamespaceAndTitle[0] = type.Namespace;
+                            MethodInfo controlPanelWindowMethod =
+                                type.GetMethod
+                                (
+                                    "ControlPanelWindow",
+                                    BindingFlags.Static | BindingFlags.NonPublic
+                                );
+                            MenuItem menuItemAttribute = controlPanelWindowMethod.GetCustomAttribute<MenuItem>();
+                            string[] menuItemPieces = menuItemAttribute.menuItem.Split('/');
+                            string title = menuItemPieces[menuItemPieces.Length - 1];
+                            title = title.Replace("Messaging Control Panel", "");
+                            title = title.Trim();
+                            controlPanelNamespaceAndTitle[1] = title;
+                            break;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                //Ask for new namespace from user
+                string modalTitle = "ENTER DESIRED CONTROL PANEL NAMESPACE AND TITLE";
+                controlPanelNamespaceAndTitle =
+                    MessagingControlPanelNamespaceAndTitleInputModal.Show(modalTitle, "", "");
+            }
+            return controlPanelNamespaceAndTitle;
         }
         
         internal static Type[] GetMessagingInterfaceTypes()

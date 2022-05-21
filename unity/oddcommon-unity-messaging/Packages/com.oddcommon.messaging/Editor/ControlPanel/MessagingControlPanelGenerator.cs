@@ -27,7 +27,7 @@ namespace OddCommon.Messaging.Editor
         
         #region Methods
         #region Internal
-        internal static bool GenerateControlPanel(string cpEditorScriptRelativePath)
+        internal static bool GenerateControlPanel(string cpEditorScriptRelativePath, string cpNamespace, string cpTitle)
         {
             string generatorName = nameof(MessagingControlPanelGenerator);
             string cpEditorScriptFilenameFull = MessagingConstants.controlPanelScriptFilename + ".cs";
@@ -94,7 +94,7 @@ namespace OddCommon.Messaging.Editor
                                             messageInterfaceMethod.Name + parameterInfo.Name;
                                         tempFields += 
                                             MessagingControlPanelGenerator.Indentations[2] +
-                                            "[SerializeField] private " + 
+                                            "[HideInInspector] [SerializeField] private " + 
                                             parameterTypeAsString + 
                                             " " + 
                                             messageParameterIdentifyingName + 
@@ -190,21 +190,39 @@ namespace OddCommon.Messaging.Editor
                         MessagingControlPanelGenerator.SetupClass
                         (
                             outfile.NewLine,
-                            MessagingConstants.controlPanelScriptNamespace,
+                            cpNamespace,
                             MessagingConstants.controlPanelScriptFilename
                         )
                     );
+                    outfile.Write
+                    (
+                        MessagingControlPanelGenerator.SetupClassRegionAndMenuItem
+                        (
+                            outfile.NewLine,
+                            cpNamespace,
+                            cpTitle
+                        )
+                    );
+                    outfile.Write(MessagingControlPanelGenerator.CloseClassRegionAndMenuItem(outfile.NewLine));
+                    outfile.Write(outfile.NewLine);
+                    outfile.Write(MessagingControlPanelGenerator.SetupInstanceRegion(outfile.NewLine));
                     outfile.Write(fieldsBuffer);
                     outfile.Write(MessagingControlPanelGenerator.CloseFieldsRegion(outfile.NewLine));
                     outfile.Write(outfile.NewLine);
                     outfile.Write(methodsBuffer);
                     outfile.Write(MessagingControlPanelGenerator.CloseMethodsRegion(outfile.NewLine));
+                    outfile.Write(MessagingControlPanelGenerator.CloseInstanceRegion(outfile.NewLine));
                     outfile.Write(MessagingControlPanelGenerator.CloseClass(outfile.NewLine));
                     outfile.Write(MessagingControlPanelGenerator.CloseNamespaces(outfile.NewLine));
                     outfile.Flush();
                     outfile.Close();
                 }
-                Logging.Log("[{0}] Generated control panel editor script and saved to selected path.", generatorName);
+
+                Logging.Log
+                (
+                    "[{0}] Generated control panel editor script and saved to selected path.",
+                    generatorName
+                );
                 AssetDatabase.Refresh();
                 return true;
             }
@@ -230,7 +248,7 @@ namespace OddCommon.Messaging.Editor
             usedNamespaces.Add("OddCommon.Messaging.Editor");
             return output;
         }
-
+        
         private static string CloseNamespaces(string newline)
         {
             string output = "";
@@ -254,6 +272,49 @@ namespace OddCommon.Messaging.Editor
             string output = "";
             output += "    }" + newline;
             output += "}" + newline;
+            return output;
+        }
+
+        private static string SetupClassRegionAndMenuItem(string newline, string cpNamespace, string cpTitle)
+        {
+            string output = "";
+            output += "        #region Class" + newline;
+            output += "        #region Methods" + newline;
+            output += "        [MenuItem(\"Pixeltheory/Messaging/";
+            output += cpTitle + " Messaging Control Panel\", false, 0)]" + newline;
+            output += "        private static void ControlPanelWindow()" + newline;
+            output += "        {" + newline;
+            output += "            EditorWindow.GetWindow" + newline;
+            output += "            (" + newline;
+            output += "                typeof(" + cpNamespace + ".MessagingControlPanel" + ")," + newline;
+            output += "                false," + newline;
+            output += "                " + "\"" + cpTitle + " Messaging Control Panel\"," + newline;
+            output += "                true" + newline;
+            output += "            ).Show();" + newline;
+            output += "            return;" + newline;
+            return output;
+        }
+
+        private static string CloseClassRegionAndMenuItem(string newline)
+        {
+            string output = "";
+            output += "        }" + newline;
+            output += "        #endregion //Methods" + newline;
+            output += "        #endregion //Class" + newline;
+            return output;
+        }
+
+        private static string SetupInstanceRegion(string newline)
+        {
+            string output = "";
+            output += "        #region Instance" + newline;
+            return output;
+        }
+        
+        private static string CloseInstanceRegion(string newline)
+        {
+            string output = "";
+            output += "        #endregion //Instance" + newline;
             return output;
         }
         
@@ -341,6 +402,7 @@ namespace OddCommon.Messaging.Editor
             // {1} extraIndentation
             // {2} newline
             // {3} messageEventName
+            // {4} MessagingConstants.controlPanelScriptFilename
             string output = "{0}EditorGUILayout.BeginHorizontal();{2}";
             output += "{0}GUILayout.Space(EditorGUI.indentLevel * MessagingConstants.controlPanelButtonsOffset);{2}";
             output += "{0}if (Application.isPlaying & GUILayout.Button(\"Fire {3} Event \")){2}";
@@ -364,12 +426,20 @@ namespace OddCommon.Messaging.Editor
             output += "{0}{1}{1}({2}";
             output += 
                 "{0}{1}{1}{1}\"[{{0}}] MessagingManager must exist in the scene to fire message from control panel!\",{2}";
-            output += "{0}{1}{1}{1}nameof(MessagingControlPanelGenerator){2}";
+            output += "{0}{1}{1}{1}nameof({4}){2}";
             output += "{0}{1}{1});{2}";
             output += "{0}{1}}}{2}";
             output += "{0}}}{2}";
             output += "{0}EditorGUILayout.EndHorizontal();{2}";
-            output = String.Format(output, indent, extraIndentation, newline, eventName);
+            output = String.Format
+            (
+                output,
+                indent,
+                extraIndentation,
+                newline,
+                eventName,
+                MessagingConstants.controlPanelScriptFilename
+            );
             return output;
         }
 

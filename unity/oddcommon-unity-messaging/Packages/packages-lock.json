@@ -5,7 +5,7 @@
       "depth": 0,
       "source": "git",
       "dependencies": {},
-      "hash": "6a3d0dc4619011726ce04a87f4cb7d607889a48a"
+      "hash": "98bc730507685afe21860bf1821ee1b7421aa7d2"
     },
     "com.oddcommon.messaging": {
       "version": "file:com.oddcommon.messaging",
