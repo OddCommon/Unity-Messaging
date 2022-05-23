@@ -23,7 +23,7 @@ namespace OddCommon.Messaging.Editor
         internal static bool GetSaveAssetPath(string filename, string fileExtension, out string path)
         {
             string className = nameof(MessagingUtilities);
-            string[] searchFolders = new[] { MessagingConstants.defaultAssetsPath };
+            string[] searchFolders = new[] { MessagingConstants.defaultAssetsPath, MessagingConstants.defaultPackagesPath };
             char[] directorySeparators = new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar };
             string[] guidSearchResults = 
                 AssetDatabase.FindAssets(filename, searchFolders);
@@ -67,7 +67,7 @@ namespace OddCommon.Messaging.Editor
                 {
                     selectedRelativePath += splitSelectedPath[i] + "/";
                 }
-                else if (splitSelectedPath[i] == "Assets")
+                else if (splitSelectedPath[i] == "Assets" || splitSelectedPath[i] == "Packages")
                 {
                     foundAssetSubfolder = true;
                     selectedRelativePath = splitSelectedPath[i] + "/";
@@ -180,7 +180,8 @@ namespace OddCommon.Messaging.Editor
             {
                 foreach (Assembly assembly in playerFilteredAssemblies)
                 {
-                    if (PackageInfo.FindForAssembly(assembly) == null)
+                    PackageInfo packageInfo = PackageInfo.FindForAssembly( assembly );
+                    if (packageInfo == null || packageInfo.source == PackageSource.Embedded)
                     {
                         packageFilteredAssemblies.Add(assembly);
                     }
