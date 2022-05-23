@@ -10,7 +10,7 @@ namespace OddCommon.Messaging.Editor
         #region Class
         #region Methods
         #region Editor Menu Items
-        [MenuItem("OddCommon/Messaging/Generate Messages Extensions", false, 8001)]
+        [MenuItem("Messaging/Generate Messages Extensions", false, 8001)]
         internal static void GenerateMessageExtensionsFile()
         {
             string className = nameof(MessagingMenuItems);
@@ -41,7 +41,7 @@ namespace OddCommon.Messaging.Editor
             }
         }
         
-        [MenuItem("OddCommon/Messaging/Generate Stubbed Messages Extensions", false, 8002)]
+        [MenuItem("Messaging/Generate Stubbed Messages Extensions", false, 8002)]
         internal static void GenerateStubbedMessageExtensionsFile()
         {
             string className = nameof(MessagingMenuItems);
@@ -74,7 +74,7 @@ namespace OddCommon.Messaging.Editor
             }
         }
         
-        [MenuItem("OddCommon/Messaging/Generate Control Panel Editor file", false, 9001)]
+        [MenuItem("Messaging/Generate Control Panel Editor file", false, 9001)]
         private static void GenerateControlPanel()
         {
             string className = nameof(MessagingMenuItems);
