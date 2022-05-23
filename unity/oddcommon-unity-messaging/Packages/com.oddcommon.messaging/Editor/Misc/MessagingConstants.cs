@@ -7,9 +7,9 @@ namespace OddCommon.Messaging.Editor
     { 
         #region Static
         #region Fields
-	    #region Public
-	    public static float controlPanelButtonsOffset = 18.0f;
-	    #endregion //Public
+        #region Public
+        public static float controlPanelButtonsOffset = 18.0f;
+        #endregion //Public
 
 	    #region Internal
         internal static string defaultAssetsPath = "Assets";
