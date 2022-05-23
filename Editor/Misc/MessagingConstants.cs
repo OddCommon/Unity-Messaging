@@ -13,6 +13,7 @@ namespace OddCommon.Messaging.Editor
 
 	    #region Internal
         internal static string defaultAssetsPath = "Assets";
+        internal static string defaultPackagesPath = "Packages";
         internal static string messagingExtensionsFileName = "MessagingExtensions";
         internal static string controlPanelScriptFilename = "MessagingControlPanel";
         #endregion //Internal
