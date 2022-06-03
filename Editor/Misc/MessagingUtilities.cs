@@ -22,34 +22,15 @@ namespace OddCommon.Messaging.Editor
         #region Internal
         internal static bool GetSaveAssetPath(string filename, string fileExtension, out string path)
         {
-            string className = nameof(MessagingUtilities);
-            string[] searchFolders = new[] { MessagingConstants.defaultAssetsPath, MessagingConstants.defaultPackagesPath };
-            char[] directorySeparators = new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar };
-            string[] guidSearchResults = 
-                AssetDatabase.FindAssets(filename, searchFolders);
+            string className = nameof( MessagingUtilities );
             string filenameFull = filename + fileExtension;
-            foreach (string guid in guidSearchResults)
-            {
-                string filepath = AssetDatabase.GUIDToAssetPath(guid);
-                string[] splitFoundPath = filepath.Split(directorySeparators);
-                foreach (string pathPiece in splitFoundPath)
-                {
-                    if (pathPiece == filenameFull)
-                    {
-                        string fileFoundLogFormat = "[{0}] Existing {1} found; will overwrite.";
-                        Logging.Log(fileFoundLogFormat, className, filenameFull);
-                        path = filepath;
-                        return true;
-                    }
-                }
-            }
             string saveFolderPanelTitle = "Folder to save " + filenameFull + " to";
             string saveFileSelectedPath =
                 EditorUtility.SaveFolderPanel
                 (
-                    saveFolderPanelTitle,
-                    MessagingConstants.defaultAssetsPath,
-                    ""
+                saveFolderPanelTitle,
+                MessagingConstants.defaultAssetsPath,
+                ""
                 );
             if (saveFileSelectedPath == string.Empty)
             {
@@ -58,28 +39,13 @@ namespace OddCommon.Messaging.Editor
                 path = null;
                 return false;
             }
-            string[] splitSelectedPath = saveFileSelectedPath.Split(directorySeparators);
-            string selectedRelativePath = null;
-            bool foundAssetSubfolder = false;
-            for (int i = 0; i < splitSelectedPath.Length; i++)
-            {
-                if (foundAssetSubfolder)
-                {
-                    selectedRelativePath += splitSelectedPath[i] + "/";
-                }
-                else if (splitSelectedPath[i] == "Assets" || splitSelectedPath[i] == "Packages")
-                {
-                    foundAssetSubfolder = true;
-                    selectedRelativePath = splitSelectedPath[i] + "/";
-                }
-            }
+            bool foundAssetSubfolder = saveFileSelectedPath.Contains( "Assets" ) || saveFileSelectedPath.Contains( "Packages" );
             if (foundAssetSubfolder)
             {
                 string userSelectedPathFormat =
                     "[{0}] Saving {1} at user selected location at {2}.";
-                Logging.Log(userSelectedPathFormat, className, filenameFull, selectedRelativePath);
-                selectedRelativePath += filenameFull;
-                path = selectedRelativePath;
+                Logging.Log(userSelectedPathFormat, className, filenameFull, saveFileSelectedPath);
+                path = saveFileSelectedPath + Path.DirectorySeparatorChar + filenameFull;
                 return true;
             }
             else
