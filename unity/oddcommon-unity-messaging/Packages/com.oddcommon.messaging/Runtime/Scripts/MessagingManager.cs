@@ -4,147 +4,24 @@ using System.Linq;
 using System.Reflection;
 using OddCommon.Debug;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 
 namespace OddCommon.Messaging
 {
-    [ScriptOrder(Int32.MinValue + 1)]
-    public class MessagingManager : OddBehaviourSingle<MessagingManager>
+    [DefaultExecutionOrder(Int32.MinValue + 1)]
+    public class MessagingManager : OddBehaviour<MessagingManager>
     {
-        #region Fields
-        #region Internal Fields
-        internal struct MessageKey
-        {
-            internal Type type;
-            internal string message;
-        }
-        private Dictionary<MessageKey, List<OddBehaviour>> messageReceivers;
-        private Dictionary<OddBehaviour, List<MessageKey>> messageKeys;
-        private Dictionary<Type, List<MessageKey>> typeMessages;
-        #endregion //Local Access Variables
-        #endregion //Fields
-
+        #region Class
         #region Methods
-        #region Unity Messages
-        protected override void Awake()
+        #region Public
+        public static bool RegisterForMessages(MessagingManager messagingManager, OddBehaviour listener)
         {
-            base.Awake();
-            Logging.Log(this.name + " - Initializing.");
-            this.messageReceivers = new Dictionary<MessageKey, List<OddBehaviour>>();
-            this.messageKeys = new Dictionary<OddBehaviour, List<MessageKey>>();
-            this.typeMessages = new Dictionary<Type, List<MessageKey>>();
-        }
-
-        protected override void OnDestroy()
-        {
-            Logging.Log(this.name + " - Shutting down.");
-            this.messageReceivers.Clear();
-            this.messageKeys.Clear();
-            this.typeMessages.Clear();
-            base.OnDestroy();
-        }
-        #endregion //Unity Messages
-
-        #region Local Access Methods
-        internal bool RegisterForMessagesFromCache(Type interfaceType, OddBehaviour listener)
-        {
-            bool successfullyRegisteredFromCache = false;
-            List<MessageKey> cachedMessages;
-            this.typeMessages.TryGetValue(interfaceType, out cachedMessages);
-            if (cachedMessages != null)
+            if (messagingManager == null)
             {
-                foreach (MessageKey key in cachedMessages)
-                {
-                    this.RegisterForMessagesInternal(key, listener);
-                }
-                successfullyRegisteredFromCache = true;
+                messagingManager = MessagingManager.FindValidMessagingManager(listener.gameObject.scene);
             }
-            return successfullyRegisteredFromCache;
-        }
-
-        internal void AddMessagesToCache(Type interfaceType, List<MessageKey> messages)
-        {
-            if (this.typeMessages.ContainsKey(interfaceType))
-            {
-                this.typeMessages.Remove(interfaceType);
-            }
-            this.typeMessages.Add(interfaceType, messages);
-        }
-
-        internal void RegisterForMessagesInternal(MessageKey key, OddBehaviour listener)
-        {
-            // Register listener
-            List<OddBehaviour> registeredListeners;
-            this.messageReceivers.TryGetValue(key, out registeredListeners);
-            if (registeredListeners == null)
-            {
-                // Add empty list if this is the first time this event has been subscribed to
-                registeredListeners = new List<OddBehaviour>();
-                registeredListeners.Add(listener);
-                this.messageReceivers.Add(key, registeredListeners);
-            }
-            else if (!registeredListeners.Contains(listener))
-            {
-                registeredListeners.Add(listener);
-            }
-            
-            // Add key to registeredKeys if needed
-            List<MessageKey> registeredKeys;
-            this.messageKeys.TryGetValue(listener, out registeredKeys);
-            if (registeredKeys == null)
-            {
-                // First time this listener has registered for messages so create new list
-                registeredKeys = new List<MessageKey>();
-                registeredKeys.Add(key);
-                this.messageKeys.Add(listener, registeredKeys);
-            }
-            else if (!registeredKeys.Contains(key))
-            {
-                registeredKeys.Add(key);
-            }
-        }
-
-        internal void DeregisterForMessagesInternal(OddBehaviour listener)
-        {
-            List<MessageKey> registeredKeys;
-            this.messageKeys.TryGetValue(listener, out registeredKeys);
-            if (registeredKeys != null)
-            {
-                foreach (MessageKey keyToRemove in registeredKeys)
-                {
-                    List<OddBehaviour> registeredListeners;
-                    this.messageReceivers.TryGetValue(keyToRemove, out registeredListeners);
-                    if (registeredListeners != null && registeredListeners.Contains(listener))
-                    {
-                        registeredListeners.Remove(listener);
-                    }
-                }
-            }
-        }
-
-        internal List<T> GetRegisteredListenersInternal<T>(string messageName)
-        {
-            List<OddBehaviour> registeredListeners;
-            MessageKey key = new MessageKey { type = typeof(T), message = messageName };
-            this.messageReceivers.TryGetValue(key, out registeredListeners);
-            if (registeredListeners == null)
-            {
-                // Add empty list if this is the first time this event has been fired
-                registeredListeners = new List<OddBehaviour>();
-                this.messageReceivers.Add(key, registeredListeners);
-            }
-            return registeredListeners.Cast<T>().ToList();
-        }
-        #endregion //Local Access Methods
-        #endregion //Methods
-    }
-
-    public static class MessagingManagerCoreExtensions
-    {
-        public static void RegisterForMessages(this MessagingManager messagingManager, OddBehaviour listener)
-        {
-            messagingManager = 
-                messagingManager == null ? GameObject.FindObjectOfType<MessagingManager>() : messagingManager;
+            bool registrationSuccessful = false;
             if (messagingManager != null)
             {
                 Logging.Log(listener.name + " - Registering all messaging methods.");
@@ -176,7 +53,7 @@ namespace OddCommon.Messaging
                     }
 
                     // Register for messages with the MessagingManager while building cache entry
-                    List<MessagingManager.MessageKey> messagesToCache = new List<MessagingManager.MessageKey>();
+                    List<MessageKey> messagesToCache = new List<MessageKey>();
                     foreach(Type messagingInterfaceType in messagingInterfaces)
                     {
                         MethodInfo[] interfaceMethods = messagingInterfaceType.GetMethods(); 
@@ -185,29 +62,45 @@ namespace OddCommon.Messaging
                             if (listenerMethodNames.Contains(method.Name))  // We have to match the names of the methods
                             {
                                 // Register for message
-                                MessagingManager.MessageKey key = new MessagingManager.MessageKey { type = messagingInterfaceType, message = method.Name };
+                                MessageKey key = new MessageKey { type = messagingInterfaceType, message = method.Name };
                                 messagingManager.RegisterForMessagesInternal(key, listener);
                                 messagesToCache.Add(key);
                             }
                         }
                     }
-
                     messagingManager.AddMessagesToCache(listenerType, messagesToCache);
                 }
+                registrationSuccessful = true;
             }
+            return registrationSuccessful;
         }
 
-        public static void DeregisterForMessages(this MessagingManager messagingManager, OddBehaviour listener)
+        public static void DeregisterForMessages(MessagingManager messagingManager, OddBehaviour listener)
         {
-            messagingManager = 
-                messagingManager == null ? GameObject.FindObjectOfType<MessagingManager>() : messagingManager;
+            if (messagingManager == null)
+            {
+                messagingManager = MessagingManager.FindValidMessagingManager(listener.gameObject.scene);
+            }
             if (messagingManager != null)
             {
                 messagingManager.DeregisterForMessagesInternal(listener);
             }
         }
 
-        public static List<T> GetRegisteredListeners<T>(this MessagingManager messagingManager, string messageName)
+        public static MessagingManager FindValidMessagingManager(Scene scene)
+        {
+            MessagingManager[] messagingManagers = GameObject.FindObjectsOfType<MessagingManager>();
+            foreach (MessagingManager messagingManager in messagingManagers)
+            {
+                if (!messagingManager.isBeingDestroyed && messagingManager.isActiveAndEnabled && messagingManager.gameObject.scene == scene)
+                {
+                    return messagingManager;
+                }
+            }
+            return null;
+        }
+        
+        public static List<T> GetRegisteredListeners<T>(MessagingManager messagingManager, string messageName)
         {
             if (messagingManager != null)
             {
@@ -222,5 +115,132 @@ namespace OddCommon.Messaging
                 return new List<T>();
             }
         }
+        #endregion //Public
+        #endregion //Methods
+        #endregion //Class
+        
+        #region Instance
+        #region Fields
+        #region Protected
+        protected struct MessageKey
+        {
+            internal Type type;
+            internal string message;
+        }
+        protected Dictionary<MessageKey, List<OddBehaviour>> messageReceivers;
+        protected Dictionary<OddBehaviour, List<MessageKey>> messageKeys;
+        protected Dictionary<Type, List<MessageKey>> typeMessages;
+        #endregion //Protected
+        #endregion //Fields
+
+        #region Methods
+        #region Unity Messages
+        protected override void Awake()
+        {
+            base.Awake();
+            Logging.Log("[{0}] Initializing", this.name);
+            this.messageReceivers = new Dictionary<MessageKey, List<OddBehaviour>>();
+            this.messageKeys = new Dictionary<OddBehaviour, List<MessageKey>>();
+            this.typeMessages = new Dictionary<Type, List<MessageKey>>();
+        }
+
+        protected override void OnDestroy()
+        {
+            Logging.Log("[{0}] Shutting down.",this.name);
+            this.messageReceivers.Clear();
+            this.messageKeys.Clear();
+            this.typeMessages.Clear();
+            base.OnDestroy();
+        }
+        #endregion //Unity Messages
+
+        #region Protected
+        protected virtual bool RegisterForMessagesFromCache(Type interfaceType, OddBehaviour listener)
+        {
+            bool successfullyRegisteredFromCache = false;
+            this.typeMessages.TryGetValue(interfaceType, out List<MessageKey> cachedMessages);
+            if (cachedMessages != null)
+            {
+                foreach (MessageKey key in cachedMessages)
+                {
+                    this.RegisterForMessagesInternal(key, listener);
+                }
+                successfullyRegisteredFromCache = true;
+            }
+            return successfullyRegisteredFromCache;
+        }
+        
+        protected virtual void AddMessagesToCache(Type interfaceType, List<MessageKey> messages)
+        {
+            if (this.typeMessages.ContainsKey(interfaceType))
+            {
+                this.typeMessages.Remove(interfaceType);
+            }
+            this.typeMessages.Add(interfaceType, messages);
+        }
+
+        protected virtual void RegisterForMessagesInternal(MessageKey key, OddBehaviour listener)
+        {
+            // Register listener
+            this.messageReceivers.TryGetValue(key, out List<OddBehaviour> registeredListeners);
+            if (registeredListeners == null)
+            {
+                registeredListeners = new List<OddBehaviour>();
+                registeredListeners.Add(listener);
+                this.messageReceivers.Add(key, registeredListeners);
+            }
+            else if (!registeredListeners.Contains(listener))
+            {
+                registeredListeners.Add(listener);
+            }
+            
+            // Add key to registeredKeys if needed
+            this.messageKeys.TryGetValue(listener, out List<MessageKey> registeredKeys);
+            if (registeredKeys == null)
+            {
+                registeredKeys = new List<MessageKey>();
+                registeredKeys.Add(key);
+                this.messageKeys.Add(listener, registeredKeys);
+            }
+            else if (!registeredKeys.Contains(key))
+            {
+                registeredKeys.Add(key);
+            }
+        }
+
+        protected virtual void DeregisterForMessagesInternal(OddBehaviour listener)
+        {
+            List<MessageKey> registeredKeys;
+            this.messageKeys.TryGetValue(listener, out registeredKeys);
+            if (registeredKeys != null)
+            {
+                foreach (MessageKey keyToRemove in registeredKeys)
+                {
+                    List<OddBehaviour> registeredListeners;
+                    this.messageReceivers.TryGetValue(keyToRemove, out registeredListeners);
+                    if (registeredListeners != null && registeredListeners.Contains(listener))
+                    {
+                        registeredListeners.Remove(listener);
+                    }
+                }
+            }
+        }
+
+        protected virtual List<T> GetRegisteredListenersInternal<T>(string messageName)
+        {
+            List<OddBehaviour> registeredListeners;
+            MessageKey key = new MessageKey { type = typeof(T), message = messageName };
+            this.messageReceivers.TryGetValue(key, out registeredListeners);
+            if (registeredListeners == null)
+            {
+                // Add empty list if this is the first time this event has been fired
+                registeredListeners = new List<OddBehaviour>();
+                this.messageReceivers.Add(key, registeredListeners);
+            }
+            return registeredListeners.Cast<T>().ToList();
+        }
+        #endregion //Protected
+        #endregion //Methods
+        #endregion //Instance
     }
 }

@@ -4,5 +4,5 @@
 [MessagingInterface]
 public interface TestInterfaceOddBehaviourSingletonParameter
 {
-    void TestMethodOddBehaviourSingletonParameter(TestClassOddBehaviourSingleton oddBehaviourSingletonParameter);
+    void TestMethodOddBehaviourSingletonParameter(TestClassOddBehaviourSingle oddBehaviourSingleParameter);
 }

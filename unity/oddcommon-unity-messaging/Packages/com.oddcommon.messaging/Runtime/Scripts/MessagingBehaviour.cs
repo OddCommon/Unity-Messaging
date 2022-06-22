@@ -1,45 +1,17 @@
-using OddCommon.Debug;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 
 namespace OddCommon.Messaging
 {
-    public class MessagingBehaviour : OddBehaviour
+    public class MessagingBehaviour<T1, T2> : OddBehaviour<T1, T2>
+        where T1 : OddBehaviour<T1>
+        where T2 : OddScriptableObject<T2>
     {
         #region Fields
         #region Inspector
         [Header("MessagingBehaviour")]
         [SerializeField] protected MessagingManager messagingManager;
-        [SerializeField] protected bool crossSceneMessagingManager;
-        #endregion //Inspector
-        #endregion //Fields
-        
-        #region Methods
-        #region Unity Messages
-        protected virtual void Awake()
-        {
-            if (this.messagingManager == null && this.crossSceneMessagingManager)
-            {
-                this.messagingManager = GameObject.FindObjectOfType<MessagingManager>();
-            }
-            this.messagingManager.RegisterForMessages(this);
-        }
-
-        protected virtual void OnDestroy()
-        {
-            this.messagingManager.DeregisterForMessages(this);
-        }
-        #endregion //Unity Messages
-        #endregion //Methods
-    }
-
-    public class MessagingBehaviour<T> : OddBehaviour<T> where T : OddScriptableObjectSingle<T>
-    {
-        #region Fields
-        #region Inspector
-        [Header("MessagingBehaviour")]
-        [SerializeField] protected MessagingManager messagingManager;
-        [SerializeField] protected bool crossSceneMessagingManager;
         #endregion //Inspector
         #endregion //Fields
         
@@ -48,17 +20,14 @@ namespace OddCommon.Messaging
         protected override void Awake()
         {
             base.Awake();
-            if (this.messagingManager == null && this.crossSceneMessagingManager)
-            {
-                this.messagingManager = GameObject.FindObjectOfType<MessagingManager>();
-            }
-            this.messagingManager.RegisterForMessages(this);
+            Assert.IsNotNull(this.messagingManager);
+            MessagingManager.RegisterForMessages(this.messagingManager, this);
         }
 
         protected override void OnDestroy()
         {
+            MessagingManager.DeregisterForMessages(this.messagingManager, this);
             base.OnDestroy();
-            this.messagingManager.DeregisterForMessages(this);
         }
         #endregion //Unity Messages
         #endregion //Methods

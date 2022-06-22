@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using NUnit.Framework;
 using UnityEditor;
 using UnityEditor.Compilation;
 using UnityEditor.PackageManager;
 using UnityEditor.PackageManager.Requests;
 using OddCommon.Debug;
-
+using UnityEngine;
 using Assembly = System.Reflection.Assembly;
 using UnityAssembly = UnityEditor.Compilation.Assembly;
 using PackageInfo = UnityEditor.PackageManager.PackageInfo;
@@ -20,6 +21,13 @@ namespace OddCommon.Messaging.Editor
         #region Class
         #region Methods
         #region Internal
+        internal static Hash128 GetProjectUniqueHash128(string data)
+        {
+            Hash128 hash = Hash128.Compute(PlayerSettings.productGUID.ToString());
+            hash.Append(data);
+            return hash;
+        }
+        
         internal static bool GetSaveAssetPath(string filename, string fileExtension, out string path)
         {
             string className = nameof( MessagingUtilities );
@@ -28,9 +36,9 @@ namespace OddCommon.Messaging.Editor
             string saveFileSelectedPath =
                 EditorUtility.SaveFolderPanel
                 (
-                saveFolderPanelTitle,
-                MessagingConstants.defaultAssetsPath,
-                ""
+                    saveFolderPanelTitle,
+                    MessagingConstants.defaultAssetsPath,
+                    ""
                 );
             if (saveFileSelectedPath == string.Empty)
             {
@@ -61,42 +69,33 @@ namespace OddCommon.Messaging.Editor
         internal static List<string> GetControlPanelNamespaceAndTitle(string controlPanelScriptFilepath)
         {
             List<string> controlPanelNamespaceAndTitle = new List<string>();
-            controlPanelNamespaceAndTitle.Add("");
-            controlPanelNamespaceAndTitle.Add("");
-            if (File.Exists(controlPanelScriptFilepath))
+            controlPanelNamespaceAndTitle.Add
+            (
+                EditorPrefs.GetString
+                (
+                    MessagingUtilities.GetProjectUniqueHash128(MessagingConstants.messagingNamespaceKey).ToString(),
+                    ""
+                )
+            );
+            controlPanelNamespaceAndTitle.Add
+            (
+                EditorPrefs.GetString
+                (
+                    MessagingUtilities.GetProjectUniqueHash128(MessagingConstants.messagingTitleKey).ToString(),
+                    ""
+                )
+            );
+            if (String.IsNullOrEmpty(controlPanelNamespaceAndTitle[0]) || String.IsNullOrEmpty(controlPanelNamespaceAndTitle[1]))
             {
-                //Previous control panel script exists, extract namespace
-                Assembly[] allAssemblies = System.AppDomain.CurrentDomain.GetAssemblies();
-                foreach (Assembly assembly in allAssemblies)
-                {
-                    foreach (Type type in assembly.GetTypes())
-                    {
-                        if (type.Name == MessagingConstants.controlPanelScriptFilename)
-                        {
-                            controlPanelNamespaceAndTitle[0] = type.Namespace;
-                            MethodInfo controlPanelWindowMethod =
-                                type.GetMethod
-                                (
-                                    "ControlPanelWindow",
-                                    BindingFlags.Static | BindingFlags.NonPublic
-                                );
-                            MenuItem menuItemAttribute = controlPanelWindowMethod.GetCustomAttribute<MenuItem>();
-                            string[] menuItemPieces = menuItemAttribute.menuItem.Split('/');
-                            string title = menuItemPieces[menuItemPieces.Length - 1];
-                            title = title.Replace("Messaging Control Panel", "");
-                            title = title.Trim();
-                            controlPanelNamespaceAndTitle[1] = title;
-                            break;
-                        }
-                    }
-                }
-            }
-            else
-            {
-                //Ask for new namespace from user
+                //Ask for new namespace and title from user
                 string modalTitle = "ENTER DESIRED CONTROL PANEL NAMESPACE AND TITLE";
                 controlPanelNamespaceAndTitle =
-                    MessagingControlPanelNamespaceAndTitleInputModal.Show(modalTitle, "", "");
+                    MessagingControlPanelNamespaceAndTitleInputModal.Show
+                    (
+                        modalTitle,
+                        controlPanelNamespaceAndTitle[0],
+                        controlPanelNamespaceAndTitle[1]
+                    );
             }
             return controlPanelNamespaceAndTitle;
         }

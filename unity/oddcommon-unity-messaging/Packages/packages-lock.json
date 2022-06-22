@@ -5,14 +5,14 @@
       "depth": 0,
       "source": "git",
       "dependencies": {},
-      "hash": "ca35574ba74c53c42df263922568243c47bcf7f8"
+      "hash": "450dfb2a1f9ba3987820826882046b3729eead3d"
     },
     "com.oddcommon.messaging": {
       "version": "file:com.oddcommon.messaging",
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "com.oddcommon.base": "2.1.1"
+        "com.oddcommon.base": "3.0.0"
       }
     },
     "com.unity.collab-proxy": {
