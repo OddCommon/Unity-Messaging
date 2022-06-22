@@ -280,8 +280,7 @@ namespace OddCommon.Messaging.Editor
             string output = "";
             output += "        #region Class" + newline;
             output += "        #region Methods" + newline;
-            output += "        [MenuItem(\"Messaging/";
-            output += cpTitle + " Messaging Control Panel\", false, 0)]" + newline;
+            output += "        [MenuItem(\"Messaging/" + cpTitle + " Messaging Control Panel\", false, 0)]" + newline;
             output += "        private static void ControlPanelWindow()" + newline;
             output += "        {" + newline;
             output += "            EditorWindow.GetWindow" + newline;

@@ -1,7 +1,4 @@
-﻿#if UNITY_EDITOR
-
-
-namespace OddCommon.Messaging.Editor
+﻿namespace OddCommon.Messaging.Editor
 {
     public class MessagingConstants
     { 
@@ -16,9 +13,10 @@ namespace OddCommon.Messaging.Editor
         internal static string defaultPackagesPath = "Packages";
         internal static string messagingExtensionsFileName = "MessagingExtensions";
         internal static string controlPanelScriptFilename = "MessagingControlPanel";
+        internal static string messagingNamespaceKey = "MessagingNamespace";
+        internal static string messagingTitleKey = "MessagingTitle";
         #endregion //Internal
         #endregion //Fields
         #endregion //Static
     }
 }
-#endif //UNITY_EDITOR

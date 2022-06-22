@@ -1,4 +1,5 @@
 ﻿using System;
+using OddCommon;
 using UnityEngine;
 using OddCommon.Debug;
 using OddCommon.Messaging;
@@ -7,7 +8,7 @@ using TestNamespace;
 using Random = UnityEngine.Random;
 
 
-public class TestMessagingReceiver : MessagingBehaviour, 
+public class TestMessagingReceiver : MessagingBehaviour<TestMessagingReceiver, TestMessagingRuntimeData>, 
     TestInterfaceInheritance, TestInterfaceNoNamespace, TestInterfaceInNamespace, TestInterfaceNoParameter
 {
     public void TestMethodByteSignedParameter(sbyte signedByteParam)

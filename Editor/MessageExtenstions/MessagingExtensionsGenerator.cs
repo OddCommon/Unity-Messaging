@@ -103,8 +103,8 @@ namespace OddCommon.Messaging.Editor
             if (!stub)
             {
                 outfile.Write("        List<" + type.Name + "> allListeners = ");
-                outfile.WriteLine("messagingManager.GetRegisteredListeners<" +
-                                  type.Name + ">(\"" + method.Name +
+                outfile.WriteLine("MessagingManager.GetRegisteredListeners<" +
+                                  type.Name + ">(messagingManager, \"" + method.Name +
                                   "\");");
                 outfile.WriteLine("        foreach (" + type.Name +
                                   " listener in allListeners)");

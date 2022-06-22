@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using OddCommon.Debug;
+using UnityEngine;
 
 
 namespace OddCommon.Messaging.Editor
@@ -18,7 +19,8 @@ namespace OddCommon.Messaging.Editor
             bool filepathFound = false;
             bool fileFound = false;
             string className = nameof(MessagingMenuItems);
-            string eventExtensionsRelativePath = EditorPrefs.GetString( MessagingConstants.messagingExtensionsFileName, "" );
+            string editorPrefsKey = MessagingUtilities.GetProjectUniqueHash128(MessagingConstants.messagingExtensionsFileName).ToString();
+            string eventExtensionsRelativePath = EditorPrefs.GetString(editorPrefsKey, "");
             if ( !String.IsNullOrEmpty( eventExtensionsRelativePath ))
             {
                 if( File.Exists( eventExtensionsRelativePath ) )
@@ -30,7 +32,7 @@ namespace OddCommon.Messaging.Editor
                 }
                 else
                 {
-                    EditorPrefs.DeleteKey( MessagingConstants.messagingExtensionsFileName );
+                    EditorPrefs.DeleteKey( editorPrefsKey );
                 }
             } 
             if ( !fileFound )
@@ -38,16 +40,16 @@ namespace OddCommon.Messaging.Editor
                 filepathFound =
                     MessagingUtilities.GetSaveAssetPath
                     (
-                    MessagingConstants.messagingExtensionsFileName,
-                    ".cs",
-                    out eventExtensionsRelativePath
+                        MessagingConstants.messagingExtensionsFileName,
+                        ".cs",
+                        out eventExtensionsRelativePath
                     );
             }
             if (filepathFound)
             {
                 if (MessagingExtensionsGenerator.GenerateMessagingExtensions(eventExtensionsRelativePath, false))
                 {
-                    EditorPrefs.SetString( MessagingConstants.messagingExtensionsFileName, eventExtensionsRelativePath );
+                    EditorPrefs.SetString( editorPrefsKey, eventExtensionsRelativePath );
                     Logging.Log("[{0}] Successfully generated MessagingExtensions.cs.", className);
                 }
                 else
@@ -69,7 +71,8 @@ namespace OddCommon.Messaging.Editor
             bool filepathFound = false;
             bool fileFound = false;
             string className = nameof(MessagingMenuItems);
-            string eventExtensionsRelativePath = EditorPrefs.GetString( MessagingConstants.messagingExtensionsFileName, "" );
+            string editorPrefsKey = MessagingUtilities.GetProjectUniqueHash128(MessagingConstants.messagingExtensionsFileName).ToString();
+            string eventExtensionsRelativePath = EditorPrefs.GetString(editorPrefsKey,"");
             if ( !String.IsNullOrEmpty( eventExtensionsRelativePath ))
             {
                 if( File.Exists( eventExtensionsRelativePath ) )
@@ -81,7 +84,7 @@ namespace OddCommon.Messaging.Editor
                 }
                 else
                 {
-                    EditorPrefs.DeleteKey( MessagingConstants.messagingExtensionsFileName );
+                    EditorPrefs.DeleteKey( editorPrefsKey );
                 }
             } 
             if ( !fileFound )
@@ -89,16 +92,16 @@ namespace OddCommon.Messaging.Editor
                 filepathFound =
                     MessagingUtilities.GetSaveAssetPath
                     (
-                    MessagingConstants.messagingExtensionsFileName,
-                    ".cs",
-                    out eventExtensionsRelativePath
+                        MessagingConstants.messagingExtensionsFileName,
+                        ".cs",
+                        out eventExtensionsRelativePath
                     );
             }
             if (filepathFound)
             {
                 if (MessagingExtensionsGenerator.GenerateMessagingExtensions(eventExtensionsRelativePath, true))
                 {
-                    EditorPrefs.SetString( MessagingConstants.messagingExtensionsFileName, eventExtensionsRelativePath );
+                    EditorPrefs.SetString( editorPrefsKey, eventExtensionsRelativePath );
                     Logging.Log("[{0}] Successfully generated MessagingExtensions.cs.", className);
                 }
                 else
@@ -120,7 +123,8 @@ namespace OddCommon.Messaging.Editor
             bool filepathFound = false;
             bool fileFound = false;
             string className = nameof(MessagingMenuItems);
-            string controlPanelRelativePath = EditorPrefs.GetString( MessagingConstants.controlPanelScriptFilename, "" );
+            string editorPrefsKey = MessagingUtilities.GetProjectUniqueHash128(MessagingConstants.controlPanelScriptFilename).ToString();
+            string controlPanelRelativePath = EditorPrefs.GetString(editorPrefsKey, "");
             if ( !String.IsNullOrEmpty( controlPanelRelativePath ))
             {
                 if( File.Exists( controlPanelRelativePath ) )
@@ -132,7 +136,7 @@ namespace OddCommon.Messaging.Editor
                 }
                 else
                 {
-                    EditorPrefs.DeleteKey( MessagingConstants.controlPanelScriptFilename );
+                    EditorPrefs.DeleteKey( editorPrefsKey );
                 }
             } 
             if ( !fileFound )
@@ -140,9 +144,9 @@ namespace OddCommon.Messaging.Editor
                 filepathFound =
                     MessagingUtilities.GetSaveAssetPath
                     (
-                    MessagingConstants.controlPanelScriptFilename,
-                    ".cs",
-                    out controlPanelRelativePath
+                        MessagingConstants.controlPanelScriptFilename,
+                        ".cs",
+                        out controlPanelRelativePath
                     );
             }
             if (filepathFound)
@@ -164,7 +168,7 @@ namespace OddCommon.Messaging.Editor
                     );
                 if (generateControlPanelSucceeded)
                 {
-                    EditorPrefs.SetString( MessagingConstants.controlPanelScriptFilename, controlPanelRelativePath );
+                    EditorPrefs.SetString( editorPrefsKey, controlPanelRelativePath );
                     Logging.Log("[{0}] Successfully generated MessagingControlPanel.cs.", className);
                 }
                 else
